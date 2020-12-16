@@ -194,6 +194,15 @@ public class SchemaRepository {
         typesForConfig.put(type, schema);
         schemaByApiKeys.put(key, schema);
         return schema;
+      } else if (Types.isOptional(type)) {
+        schema = ANY_SCHEMA;
+        if (Types.isConcreteType(type.getType())) {
+          TypeToken<?> typeParameter = Types.getTypeParameter(type, 0);
+          schema = createBeanSchema(typeParameter, typesForConfig, config);
+        }
+        typesForConfig.put(type, schema);
+        schemaByApiKeys.put(key, schema);
+        return schema;
       } else {
         schema = createBeanSchema(type, typesForConfig, config);
         typesForConfig.put(type, schema);

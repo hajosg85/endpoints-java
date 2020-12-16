@@ -54,6 +54,7 @@ import com.google.api.server.spi.testing.MultiResourceEndpoint.Resource1Endpoint
 import com.google.api.server.spi.testing.MultiResourceEndpoint.Resource2Endpoint;
 import com.google.api.server.spi.testing.MultiVersionEndpoint.Version1Endpoint;
 import com.google.api.server.spi.testing.MultiVersionEndpoint.Version2Endpoint;
+import com.google.api.server.spi.testing.OptionalEndpoint;
 import com.google.api.server.spi.testing.RequiredPropertiesEndpoint;
 import com.google.api.server.spi.testing.SpecialCharsEndpoint;
 import com.google.api.server.spi.testing.ResponseStatusEndpoint;
@@ -352,6 +353,14 @@ public class SwaggerGeneratorTest {
         .setAddGoogleJsonErrorAsDefaultResponse(true)
         .setAddErrorCodesForServiceExceptions(true));
     Swagger expected = readExpectedAsSwagger("error_codes_all.swagger");
+    checkSwagger(expected, swagger);
+  }
+  
+  @Test
+  public void testWriteSwagger_Optional() throws Exception {
+    ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), OptionalEndpoint.class);
+    Swagger swagger = generator.writeSwagger(ImmutableList.of(config), context);
+    Swagger expected = readExpectedAsSwagger("optional_endpoint.swagger");
     checkSwagger(expected, swagger);
   }
 

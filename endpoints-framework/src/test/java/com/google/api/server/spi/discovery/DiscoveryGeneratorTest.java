@@ -43,6 +43,7 @@ import com.google.api.server.spi.testing.MapEndpointInvalid;
 import com.google.api.server.spi.testing.MultipleParameterEndpoint;
 import com.google.api.server.spi.testing.NamespaceEndpoint;
 import com.google.api.server.spi.testing.NonDiscoverableEndpoint;
+import com.google.api.server.spi.testing.OptionalEndpoint;
 import com.google.api.server.spi.testing.PrimitiveEndpoint;
 import com.google.api.server.spi.testing.RequiredPropertiesEndpoint;
 import com.google.api.services.discovery.model.DirectoryList;
@@ -65,7 +66,6 @@ import org.junit.runners.JUnit4;
 public class DiscoveryGeneratorTest {
   private final DiscoveryContext context = new DiscoveryContext()
       .setApiRoot("https://discovery-test.appspot.com/api");
-  private final ObjectMapper mapper = ObjectMapperUtil.createStandardObjectMapper();
   private DiscoveryGenerator generator;
   private ApiConfigLoader configLoader;
   private SchemaRepository schemaRepository;
@@ -273,7 +273,14 @@ public class DiscoveryGeneratorTest {
     assertThat(result.discoveryDocs()).isEmpty();
     assertThat(result.directory().getItems()).isEmpty();
   }
-
+  
+  @Test
+  public void testWriteDiscovery_OptionalEndpoint() throws Exception {
+    RestDescription doc = getDiscovery(new DiscoveryContext(), OptionalEndpoint.class);
+    RestDescription expected = readExpectedAsDiscovery("optional_endpoint.json");
+    compareDiscovery(expected, doc);
+  }
+  
   @Test
   public void testDirectoryIsCloneable() throws Exception {
     ApiConfig config = configLoader.loadConfiguration(ServiceContext.create(), FooEndpoint.class);

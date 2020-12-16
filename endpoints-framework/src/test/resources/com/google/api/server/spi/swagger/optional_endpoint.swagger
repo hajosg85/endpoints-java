@@ -1,0 +1,77 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "version" : "1.0.0",
+    "title" : "swagger-test.appspot.com"
+  },
+  "host" : "swagger-test.appspot.com",
+  "basePath" : "/api",
+  "tags" : [ {
+    "name" : "myapi:v1"
+  } ],
+  "schemes" : [ "https" ],
+  "consumes" : [ "application/json" ],
+  "produces" : [ "application/json" ],
+  "paths" : {
+    "/myapi/v1/optionalresults" : {
+      "get" : {
+        "tags" : [ "myapi:v1" ],
+        "operationId" : "myapi:v1.getResult",
+        "responses" : {
+          "200" : {
+            "description" : "A OptionalResults response",
+            "schema" : {
+              "$ref" : "#/definitions/OptionalResults"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions" : {
+    "Foo" : {
+      "type" : "object",
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "value" : {
+          "type" : "integer",
+          "format" : "int32"
+        }
+      }
+    },
+    "Integer" : {
+      "type" : "object"
+    },
+    "OptionalResults" : {
+      "type" : "object",
+      "properties" : {
+        "optionalDouble" : {
+          "type" : "number",
+          "format" : "double"
+        },
+        "optionalFoo" : {
+          "$ref" : "#/definitions/Foo"
+        },
+        "optionalInt" : {
+          "type" : "integer",
+          "format" : "int32"
+        },
+        "optionalInteger" : {
+          "$ref" : "#/definitions/Integer"
+        },
+        "optionalLong" : {
+          "type" : "integer",
+          "format" : "int64"
+        },
+        "optionalString" : {
+          "$ref" : "#/definitions/String"
+        }
+      }
+    },
+    "String" : {
+      "type" : "object"
+    }
+  }
+}

@@ -7,6 +7,9 @@ import com.google.common.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.Date;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 
 /**
  * Classifier and metadata for field types.
@@ -62,12 +65,15 @@ public enum FieldType {
         .put(Character.TYPE, STRING)
         .put(Integer.class, INT32)
         .put(Integer.TYPE, INT32)
+        .put(OptionalInt.class, INT32)
         .put(Long.class, INT64)
         .put(Long.TYPE, INT64)
+        .put(OptionalLong.class, INT64)
         .put(Float.class, FLOAT)
         .put(Float.TYPE, FLOAT)
         .put(Double.class, DOUBLE)
         .put(Double.TYPE, DOUBLE)
+        .put(OptionalDouble.class, DOUBLE)
         .put(Boolean.class, BOOLEAN)
         .put(Boolean.TYPE, BOOLEAN)
         .put(Date.class, DATE_TIME)

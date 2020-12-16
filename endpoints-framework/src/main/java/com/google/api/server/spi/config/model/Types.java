@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -152,8 +153,14 @@ public abstract class Types {
   public static boolean isObject(TypeToken<?> type) {
     return type.getType() == Object.class;
   }
-
-
+  
+  /**
+   * Returns whether or not this type is {@link Optional}.
+   */
+  public static boolean isOptional(TypeToken<?> type) {
+    return type.getRawType() == Optional.class;
+  }
+  
   /**
    * Gets a simple name for a type that's suitable for use as a schema name. This will resolve any
    * transformations on the type, which may affect the type name.
