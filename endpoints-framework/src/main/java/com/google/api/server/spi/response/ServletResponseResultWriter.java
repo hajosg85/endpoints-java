@@ -40,6 +40,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
@@ -150,10 +151,18 @@ public class ServletResponseResultWriter implements ResultWriter {
         jgen.writeString(value.toString());
       }
     };
+    JsonSerializer<OptionalLong> optionalLongJsonSerializer = new JsonSerializer<OptionalLong>() {
+      @Override
+      public void serialize(OptionalLong value, JsonGenerator jgen, SerializerProvider provider)
+              throws IOException {
+        jgen.writeString(value.isPresent() ? String.valueOf(value.getAsLong()) : null);
+      }
+    };
     SimpleModule writeLongAsStringModule = new SimpleModule("writeLongAsStringModule",
         new Version(1, 0, 0, null, null, null));
     writeLongAsStringModule.addSerializer(Long.TYPE, longSerializer);  // long (primitive)
     writeLongAsStringModule.addSerializer(Long.class, longSerializer); // Long (class)
+    writeLongAsStringModule.addSerializer(OptionalLong.class, optionalLongJsonSerializer); // Long (class)
     return writeLongAsStringModule;
   }
 

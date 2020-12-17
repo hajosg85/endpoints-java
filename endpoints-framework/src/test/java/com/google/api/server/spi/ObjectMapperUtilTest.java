@@ -76,6 +76,8 @@ public class ObjectMapperUtilTest {
         .isEqualTo(null);
     assertThat(reader.<TestOptionals>readValue("{\"optionalLong\":123}").getOptionalLong())
         .isEqualTo(OptionalLong.of(123));
+    assertThat(reader.<TestOptionals>readValue("{\"optionalLong\":\"123\"}").getOptionalLong())
+            .isEqualTo(OptionalLong.of(123));
     assertThat(reader.<TestOptionals>readValue("{\"optionalLong\":null}").getOptionalLong())
         .isEqualTo(OptionalLong.empty());
     assertThat(reader.<TestOptionals>readValue("{}").getOptionalLong())

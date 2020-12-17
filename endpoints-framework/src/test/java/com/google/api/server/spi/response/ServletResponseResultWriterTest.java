@@ -41,6 +41,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import javax.servlet.http.HttpServletResponse;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -72,6 +73,8 @@ public class ServletResponseResultWriterTest {
     Map<String, Object> value = new HashMap<>();
     value.put("nonPrimitive", 100L);
     value.put("primitive", 200L);
+    value.put("optionalLong", OptionalLong.of(150L));
+    value.put("optionalOfLong", Optional.of(250L));
     value.put("date", new Date(DATE_VALUE));
     value.put("dateAndTime", DateAndTime.parseRfc3339String(DATE_AND_TIME_VALUE_STRING));
     value.put("simpleDate", new SimpleDate(2002, 10, 2));
@@ -87,6 +90,12 @@ public class ServletResponseResultWriterTest {
       }
       public Long getNonPrimitive() {
         return 100L;
+      }
+      public OptionalLong getOptionalLong() {
+        return OptionalLong.of(150L);
+      }
+      public Optional<Long> getOptionalOfLong() {
+        return Optional.of(250L);
       }
       public Long getLongNull() {
         return null;
@@ -788,6 +797,10 @@ public class ServletResponseResultWriterTest {
     assertEquals("100", output.get("nonPrimitive").asText());
     assertTrue(output.get("primitive").isTextual());
     assertEquals("200", output.get("primitive").asText());
+    assertTrue(output.get("optionalLong").isTextual());
+    assertEquals("150", output.get("optionalLong").asText());
+    assertTrue(output.get("optionalOfLong").isTextual());
+    assertEquals("250", output.get("optionalOfLong").asText());
     assertEquals(
         new com.google.api.client.util.DateTime(DATE_VALUE_STRING),
         new com.google.api.client.util.DateTime(output.get("date").asText()));
