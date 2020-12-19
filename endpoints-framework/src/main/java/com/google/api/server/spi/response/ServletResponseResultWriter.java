@@ -15,6 +15,8 @@
  */
 package com.google.api.server.spi.response;
 
+import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
+
 import com.google.api.server.spi.ConfiguredObjectMapper;
 import com.google.api.server.spi.Constant;
 import com.google.api.server.spi.ServiceException;
@@ -108,7 +110,8 @@ public class ServletResponseResultWriter implements ResultWriter {
 
   @Override
   public void write(Object response, int status) throws IOException {
-    write(status, null, ResponseUtil.wrapCollection(response), false);
+    int finalStatus = response == null ? SC_NO_CONTENT : status;
+    write(finalStatus, null, ResponseUtil.wrapCollection(response), false);
   }
 
   @Override

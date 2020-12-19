@@ -114,6 +114,16 @@ public class EndpointsServletTest {
 
     assertThat(resp.getStatus()).isEqualTo(HttpServletResponse.SC_NO_CONTENT);
   }
+  
+  @Test
+  public void nullResponse() throws IOException {
+    req.setRequestURI("/_ah/api/test/v2/null");
+    req.setMethod("GET");
+    
+    servlet.service(req, resp);
+    
+    assertThat(resp.getStatus()).isEqualTo(HttpServletResponse.SC_NO_CONTENT);
+  }
 
   @Test
   public void echo() throws IOException {
@@ -215,6 +225,11 @@ public class EndpointsServletTest {
     @ApiMethod(httpMethod = HttpMethod.POST)
     public TestResource echo(TestResource r) {
       return r;
+    }
+  
+    @ApiMethod(httpMethod = HttpMethod.GET, path = "null")
+    public TestResource nullResponse() {
+      return null;
     }
 
     @ApiMethod(httpMethod = "PATCH")

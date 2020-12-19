@@ -119,7 +119,7 @@ public class ApiMethodConfigTest {
   }
 
   @Test
-  public void testMethodReponseStatusEffectiveStatus_returnVoid_statusNO_CONTENT() throws Exception {
+  public void testMethodResponseStatusEffectiveStatus_returnVoid_statusNO_CONTENT() throws Exception {
     Mockito.when(method.getReturnType()).thenReturn(voidReturnType);
     methodConfig = new ApiMethodConfig(method, new TypeLoader(), apiClassConfig);
 

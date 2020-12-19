@@ -25,7 +25,7 @@ import java.io.IOException;
 public interface ResultWriter {
 
   /**
-   * Writes a result JSON object.
+   * Writes a result JSON object, with specified status code.
    * @throws IOException
    */
   void write(Object result, int status) throws IOException;
