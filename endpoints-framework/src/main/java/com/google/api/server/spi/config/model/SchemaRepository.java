@@ -226,8 +226,13 @@ public class SchemaRepository {
       }
     }
     Field mapValueSchema = schema.mapValueSchema();
-    if (mapValueSchema != null && mapValueSchema.schemaReference() != null) {
-      addSchemaToApi(key, mapValueSchema.schemaReference().get());
+    if (mapValueSchema != null) {
+      while (mapValueSchema.type() == FieldType.ARRAY) {
+        mapValueSchema = mapValueSchema.arrayItemSchema();
+      }
+      if (mapValueSchema.schemaReference() != null) {
+        addSchemaToApi(key, mapValueSchema.schemaReference().get());
+      }
     }
   }
 

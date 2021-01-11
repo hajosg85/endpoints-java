@@ -22,7 +22,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.server.spi.IoUtil;
-import com.google.api.server.spi.ObjectMapperUtil;
 import com.google.api.server.spi.ServiceContext;
 import com.google.api.server.spi.TypeLoader;
 import com.google.api.server.spi.config.ApiConfigLoader;
@@ -40,6 +39,7 @@ import com.google.api.server.spi.testing.FooDescriptionEndpoint;
 import com.google.api.server.spi.testing.FooEndpoint;
 import com.google.api.server.spi.testing.MapEndpoint;
 import com.google.api.server.spi.testing.MapEndpointInvalid;
+import com.google.api.server.spi.testing.MapEndpoints;
 import com.google.api.server.spi.testing.MultipleParameterEndpoint;
 import com.google.api.server.spi.testing.NamespaceEndpoint;
 import com.google.api.server.spi.testing.NonDiscoverableEndpoint;
@@ -50,8 +50,6 @@ import com.google.api.services.discovery.model.DirectoryList;
 import com.google.api.services.discovery.model.RestDescription;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -163,6 +161,21 @@ public class DiscoveryGeneratorTest {
       RestDescription doc = getDiscovery(new DiscoveryContext(), MapEndpoint.class);
       RestDescription expected = readExpectedAsDiscovery("map_endpoint_with_array.json");
       compareDiscovery(expected, doc);
+    } finally {
+      System.clearProperty(MAP_SCHEMA_SUPPORT_ARRAYS_VALUES.systemPropertyName);
+    }
+  }
+  
+  @Test
+  public void testWriteDiscovery_MapEndpoint_CacheArrayValues() throws Exception {
+    System.setProperty(MAP_SCHEMA_SUPPORT_ARRAYS_VALUES.systemPropertyName, "yes");
+    try {
+      RestDescription api1 = getDiscovery(new DiscoveryContext(), MapEndpoints.Api1.class);
+      assertThat(api1.getSchemas()).containsKey("TestEnum");
+      //second generation has the schema for Resource cached, checks the 
+      //array value of its mapOfEnum field is present in description
+      RestDescription api2 = getDiscovery(new DiscoveryContext(), MapEndpoints.Api2.class);
+      assertThat(api2.getSchemas()).containsKey("TestEnum");
     } finally {
       System.clearProperty(MAP_SCHEMA_SUPPORT_ARRAYS_VALUES.systemPropertyName);
     }
