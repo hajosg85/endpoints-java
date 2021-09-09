@@ -94,6 +94,9 @@ public enum FieldType {
     FieldType ft = TYPE_MAP.get(type.getRawType());
     if (ft != null) {
       return ft;
+    } else if (Types.isOptional(type)) {
+      //simply unwrap the optional to get the type
+      return fromType(Types.getTypeParameter(type, 0));
     } else if (Types.getArrayItemType(type) != null) {
       return ARRAY;
     } else if (Types.isEnumType(type)) {

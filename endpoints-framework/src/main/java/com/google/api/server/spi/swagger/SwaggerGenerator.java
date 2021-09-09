@@ -777,6 +777,9 @@ public class SwaggerGenerator {
   }
 
   private static List<String> getEnumValues(TypeToken<?> t) {
+    if (Types.isOptional(t)) {
+      t = Types.getTypeParameter(t, 0);
+    }
     return new ArrayList<>(Types.getEnumValuesAndDescriptions((TypeToken<Enum<?>>) t).keySet());
   }
 
