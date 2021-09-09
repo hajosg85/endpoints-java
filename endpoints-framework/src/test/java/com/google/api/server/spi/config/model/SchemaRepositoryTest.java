@@ -31,7 +31,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Tests for {@link SchemaRepository}.
@@ -215,14 +217,9 @@ public class SchemaRepositoryTest {
         repo.getOrAdd(methodConfig.getReturnType(), config), String.class);
   }
 
-  @Test
+  @Test(expected = IllegalArgumentException.class)
   public void getOrAdd_primitiveReturn() throws Exception {
-    try {
-      repo.getOrAdd(TypeToken.of(int.class), config);
-      fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException expected) {
-      // expected
-    }
+    repo.getOrAdd(TypeToken.of(int.class), config);
   }
 
   @Test
@@ -255,6 +252,45 @@ public class SchemaRepositoryTest {
       System.clearProperty(EndpointsFlag.JSON_USE_JACKSON_ANNOTATIONS.systemPropertyName);
     }
   }
+  
+  @Test
+  public void getOrAdd_optional_foo() throws Exception {
+    checkRequiredProperties(new TypeToken<Optional<RequiredProperties>>() {});
+  }
+  
+  @Test
+  public void getOrAdd_optional_enum() throws Exception {
+    assertThat(repo.getOrAdd(new TypeToken<Optional<TestEnum>>() {}, config))
+            .isEqualTo(Schema.builder()
+                    .setName("TestEnum")
+                    .setType("string")
+                    .addEnumValue("VALUE1")
+                    .addEnumValue("value_2")
+                    .addEnumDescription("")
+                    .addEnumDescription("")
+                    .build());
+  }
+  
+  @Test(expected = IllegalArgumentException.class)
+  public void getOrAdd_optional_list() throws Exception {
+    repo.getOrAdd(new TypeToken<Optional<List<String>>>() {}, config);
+  }
+  
+  @Test(expected = IllegalArgumentException.class)
+  public void getOrAdd_optional_map() throws Exception {
+    repo.getOrAdd(new TypeToken<Optional<Map<String, String>>>() {}, config);
+
+  }
+  
+  @Test(expected = IllegalArgumentException.class)
+  public void getOrAdd_optional_object() throws Exception {
+    repo.getOrAdd(new TypeToken<Optional<Object>>() {}, config);
+  }
+  
+  @Test(expected = IllegalArgumentException.class)
+  public void getOrAdd_optional_optional() throws Exception {
+    repo.getOrAdd(new TypeToken<Optional<Optional<String>>>() {}, config);
+  }
 
   @Test
   public void getOrAdd_recursiveSchema() throws Exception {
@@ -280,57 +316,9 @@ public class SchemaRepositoryTest {
     TypeToken<RequiredProperties> type = TypeToken.of(RequiredProperties.class);
     // This test checks the combinations of annotation that determine the "required" marker for
     // resource properties.
-    repo.getOrAdd(type, config);
-    assertThat(repo.getOrAdd(type, config))
-        .isEqualTo(Schema.builder()
-            .setName("RequiredProperties")
-            .setType("object")
-            .addField("undefined", Field.builder()
-                .setName("undefined")
-                .setType(FieldType.STRING)
-                .build())
-            .addField("apiResourceProperty_undefined", Field.builder()
-                .setName("apiResourceProperty_undefined")
-                .setType(FieldType.STRING)
-                .build())
-            .addField("apiResourceProperty_required", Field.builder()
-                .setName("apiResourceProperty_required")
-                .setRequired(true)
-                .setType(FieldType.STRING)
-                .build())
-            .addField("apiResourceProperty_not_required", Field.builder()
-                .setName("apiResourceProperty_not_required")
-                .setRequired(false)
-                .setType(FieldType.STRING)
-                .build())
-            .addField("nullable", Field.builder()
-                .setName("nullable")
-                .setRequired(false)
-                .setType(FieldType.STRING)
-                .build())
-            .addField("nonnull", Field.builder()
-                .setName("nonnull")
-                .setRequired(true)
-                .setType(FieldType.STRING)
-                .build())
-            .addField("priority1", Field.builder()
-                .setName("priority1")
-                .setRequired(true)
-                .setType(FieldType.STRING)
-                .build())
-            .addField("priority2", Field.builder()
-                .setName("priority2")
-                .setRequired(true)
-                .setType(FieldType.STRING)
-                .build())
-            .addField("priority3", Field.builder()
-                .setName("priority3")
-                .setRequired(false)
-                .setType(FieldType.STRING)
-                .build())
-            .build());
+    checkRequiredProperties(type);
   }
-
+  
   @Test
   public void get() {
     TypeToken<Parameterized<Integer>> type = new TypeToken<Parameterized<Integer>>() {};
@@ -578,5 +566,56 @@ public class SchemaRepositoryTest {
                 .build())
             .build())
         .build());
+  }
+  
+  private void checkRequiredProperties(TypeToken<?> type) {
+    assertThat(repo.getOrAdd(type, config))
+            .isEqualTo(Schema.builder()
+                    .setName("RequiredProperties")
+                    .setType("object")
+                    .addField("undefined", Field.builder()
+                            .setName("undefined")
+                            .setType(FieldType.STRING)
+                            .build())
+                    .addField("apiResourceProperty_undefined", Field.builder()
+                            .setName("apiResourceProperty_undefined")
+                            .setType(FieldType.STRING)
+                            .build())
+                    .addField("apiResourceProperty_required", Field.builder()
+                            .setName("apiResourceProperty_required")
+                            .setRequired(true)
+                            .setType(FieldType.STRING)
+                            .build())
+                    .addField("apiResourceProperty_not_required", Field.builder()
+                            .setName("apiResourceProperty_not_required")
+                            .setRequired(false)
+                            .setType(FieldType.STRING)
+                            .build())
+                    .addField("nullable", Field.builder()
+                            .setName("nullable")
+                            .setRequired(false)
+                            .setType(FieldType.STRING)
+                            .build())
+                    .addField("nonnull", Field.builder()
+                            .setName("nonnull")
+                            .setRequired(true)
+                            .setType(FieldType.STRING)
+                            .build())
+                    .addField("priority1", Field.builder()
+                            .setName("priority1")
+                            .setRequired(true)
+                            .setType(FieldType.STRING)
+                            .build())
+                    .addField("priority2", Field.builder()
+                            .setName("priority2")
+                            .setRequired(true)
+                            .setType(FieldType.STRING)
+                            .build())
+                    .addField("priority3", Field.builder()
+                            .setName("priority3")
+                            .setRequired(false)
+                            .setType(FieldType.STRING)
+                            .build())
+                    .build());
   }
 }

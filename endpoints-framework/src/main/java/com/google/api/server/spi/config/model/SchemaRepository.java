@@ -139,35 +139,13 @@ public class SchemaRepository {
     // We put a placeholder in because this is a recursive process that may result in circular
     // references. This should never be returned in the public interface.
     typesForConfig.put(type, PLACEHOLDER_SCHEMA);
-    TypeToken<?> arrayItemType = Types.getArrayItemType(type);
     if (typeLoader.isSchemaType(type)) {
-      throw new IllegalArgumentException("Can't add a primitive type as a resource");
+      throw new IllegalArgumentException("Can't use a primitive type as a resource" + getExceptionSuffix(type, config));
     } else {
-      String simpleName = Types.getSimpleName(type, config.getSerializationConfig());
-      if (arrayItemType != null) {
-        Field.Builder arrayItemSchema = Field.builder().setName(ARRAY_UNUSED_MSG);
-        fillInFieldInformation(arrayItemSchema, arrayItemType, typesForConfig, config);
-        Field arrayField = arrayItemSchema.build();
-        Builder builder = Schema.builder()
-            .setName(simpleName)
-            .setType("object")
-            .addField("items", Field.builder()
-                .setName("items")
-                .setType(FieldType.ARRAY)
-                .setArrayItemSchema(arrayField)
-                .build());
-        SchemaReference itemSchema = arrayField.schemaReference();
-        if (itemSchema != null) {
-          builder.setDescription("An ordered list of " + itemSchema.get().name());
-        }
-        schema = builder.build();
-        typesForConfig.put(type, schema);
-        schemaByApiKeys.put(key, schema);
-        return schema;
+      if (Types.isArrayType(type)) {
+        schema = createArraySchema(type, typesForConfig, config);
       } else if (Types.isObject(type)) {
-        typesForConfig.put(type, ANY_SCHEMA);
-        schemaByApiKeys.put(key, ANY_SCHEMA);
-        return ANY_SCHEMA;
+        schema = ANY_SCHEMA;
       } else if (Types.isMapType(type)) {
         schema = MAP_SCHEMA;
         final TypeToken<Map<?, ?>> mapSupertype = ((TypeToken) type).getSupertype(Map.class);
@@ -176,40 +154,33 @@ public class SchemaRepository {
         if (hasConcreteKeyValue && !forceJsonMapSchema) {
           schema = createMapSchema(mapSupertype, typesForConfig, config).or(schema);
         }
-        typesForConfig.put(type, schema);
-        schemaByApiKeys.put(key, schema);
-        return schema;
       } else if (Types.isEnumType(type)) {
-        Map<String, String> valuesAndDescriptions 
-            = Types.getEnumValuesAndDescriptions((TypeToken<Enum<?>>) type);
-        Schema.Builder builder = Schema.builder()
-            .setName(simpleName)
-            .setType("string");
-        setSchemaDescription(type, builder);
-        for (Entry<String, String> entry : valuesAndDescriptions.entrySet()) {
-          builder.addEnumValue(entry.getKey());
-          builder.addEnumDescription(entry.getValue());
-        }
-        schema = builder.build();
-        typesForConfig.put(type, schema);
-        schemaByApiKeys.put(key, schema);
-        return schema;
+        schema = createEnumSchema(type, config);
       } else if (Types.isOptional(type)) {
         schema = ANY_SCHEMA;
         if (Types.isConcreteType(type.getType())) {
-          TypeToken<?> typeParameter = Types.getTypeParameter(type, 0);
-          schema = createBeanSchema(typeParameter, typesForConfig, config);
+          TypeToken<?> optionalType = Types.getTypeParameter(type, 0);
+          if (Types.isOptional(optionalType)) {
+            throw new IllegalArgumentException("Recursive Optional is not supported" + getExceptionSuffix(type, config));
+          }
+          if (Types.isArrayType(optionalType) || Types.isMapType(optionalType) || Types.isObject(optionalType)) {
+            throw new IllegalArgumentException("Optional of array-like type, Map or Object is not supported" + getExceptionSuffix(type, config));
+          }
+          schema = Types.isEnumType(optionalType) 
+                  ? createEnumSchema(optionalType, config) 
+                  : createBeanSchema(optionalType, typesForConfig, config);
         }
-        typesForConfig.put(type, schema);
-        schemaByApiKeys.put(key, schema);
-        return schema;
       } else {
         schema = createBeanSchema(type, typesForConfig, config);
-        typesForConfig.put(type, schema);
-        schemaByApiKeys.put(key, schema);
-        return schema;
       }
+      typesForConfig.put(type, schema);
+      schemaByApiKeys.put(key, schema);
+      return schema;
     }
+  }
+
+  private String getExceptionSuffix(TypeToken<?> type, ApiConfig config) {
+    return ": '" + type + "' used in " + config.getApiKey();
   }
 
   private void addSchemaToApi(ApiKey key, Schema schema) {
@@ -234,6 +205,28 @@ public class SchemaRepository {
         addSchemaToApi(key, mapValueSchema.schemaReference().get());
       }
     }
+  }
+  
+  private Schema createArraySchema(
+          TypeToken<?> type, Map<TypeToken<?>, Schema> typesForConfig, ApiConfig config) {
+    TypeToken<?> arrayItemType = Types.getArrayItemType(type);
+    String simpleName = Types.getSimpleName(type, config.getSerializationConfig());
+    Field.Builder arrayItemSchema = Field.builder().setName(ARRAY_UNUSED_MSG);
+    fillInFieldInformation(arrayItemSchema, arrayItemType, typesForConfig, config);
+    Field arrayField = arrayItemSchema.build();
+    Builder builder = Schema.builder()
+            .setName(simpleName)
+            .setType("object")
+            .addField("items", Field.builder()
+                    .setName("items")
+                    .setType(FieldType.ARRAY)
+                    .setArrayItemSchema(arrayField)
+                    .build());
+    SchemaReference itemSchema = arrayField.schemaReference();
+    if (itemSchema != null) {
+      builder.setDescription("An ordered list of " + itemSchema.get().name());
+    }
+    return builder.build();
   }
 
   private Optional<Schema> createMapSchema(
@@ -298,6 +291,20 @@ public class SchemaRepository {
     return builder.build();
   }
 
+  private Schema createEnumSchema(TypeToken<?> type, ApiConfig config) {
+    Map<String, String> valuesAndDescriptions
+            = Types.getEnumValuesAndDescriptions((TypeToken<Enum<?>>) type);
+    Builder builder = Schema.builder()
+            .setName(Types.getSimpleName(type, config.getSerializationConfig()))
+            .setType("string");
+    setSchemaDescription(type, builder);
+    for (Entry<String, String> entry : valuesAndDescriptions.entrySet()) {
+      builder.addEnumValue(entry.getKey());
+      builder.addEnumDescription(entry.getValue());
+    }
+    return builder.build();
+  }
+  
   private void fillInFieldInformation(Field.Builder builder, TypeToken<?> fieldType,
       Map<TypeToken<?>, Schema> typesForConfig, ApiConfig config) {
     FieldType ft = FieldType.fromType(fieldType);

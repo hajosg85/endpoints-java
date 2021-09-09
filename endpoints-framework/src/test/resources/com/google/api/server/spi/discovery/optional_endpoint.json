@@ -24,8 +24,12 @@
     "alt" : {
       "default" : "json",
       "description" : "Data format for the response.",
-      "enum" : [ "json" ],
-      "enumDescriptions" : [ "Responses with Content-Type of application/json" ],
+      "enum" : [
+        "json"
+      ],
+      "enumDescriptions" : [
+        "Responses with Content-Type of application/json"
+      ],
       "location" : "query",
       "type" : "string"
     },
@@ -72,7 +76,9 @@
           "response" : {
             "$ref" : "OptionalResults"
           },
-          "scopes" : [ "https://www.googleapis.com/auth/userinfo.email" ]
+          "scopes" : [
+            "https://www.googleapis.com/auth/userinfo.email"
+          ]
         }
       }
     }
@@ -92,15 +98,38 @@
       },
       "type" : "object"
     },
-    "Integer" : {
-      "id" : "Integer",
-      "type" : "object"
-    },
     "OptionalResults" : {
       "id" : "OptionalResults",
       "properties" : {
+        "enums" : {
+          "items" : {
+            "$ref" : "TestEnum"
+          },
+          "type" : "array"
+        },
+        "foos" : {
+          "items" : {
+            "$ref" : "Foo"
+          },
+          "type" : "array"
+        },
+        "optionalDate" : {
+          "format" : "date-time",
+          "type" : "string"
+        },
         "optionalDouble" : {
           "format" : "double",
+          "type" : "number"
+        },
+        "optionalDoubleObject" : {
+          "format" : "double",
+          "type" : "number"
+        },
+        "optionalEnum" : {
+          "$ref" : "TestEnum"
+        },
+        "optionalFloatObject" : {
+          "format" : "float",
           "type" : "number"
         },
         "optionalFoo" : {
@@ -111,21 +140,38 @@
           "type" : "integer"
         },
         "optionalInteger" : {
-          "$ref" : "Integer"
+          "format" : "int32",
+          "type" : "integer"
         },
         "optionalLong" : {
           "format" : "int64",
           "type" : "string"
         },
+        "optionalLongObject" : {
+          "format" : "int64",
+          "type" : "string"
+        },
+        "optionalSimpleDate" : {
+          "format" : "date",
+          "type" : "string"
+        },
         "optionalString" : {
-          "$ref" : "String"
+          "type" : "string"
         }
       },
       "type" : "object"
     },
-    "String" : {
-      "id" : "String",
-      "type" : "object"
+    "TestEnum" : {
+      "enum" : [
+        "VALUE1",
+        "value_2"
+      ],
+      "enumDescriptions" : [
+        "",
+        ""
+      ],
+      "id" : "TestEnum",
+      "type" : "string"
     }
   },
   "servicePath" : "myapi/v1/",

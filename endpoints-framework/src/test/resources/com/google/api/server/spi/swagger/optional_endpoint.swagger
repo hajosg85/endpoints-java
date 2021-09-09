@@ -41,15 +41,41 @@
         }
       }
     },
-    "Integer" : {
-      "type" : "object"
-    },
     "OptionalResults" : {
       "type" : "object",
       "properties" : {
+        "enums" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string",
+            "enum" : [ "VALUE1", "value_2" ]
+          }
+        },
+        "foos" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/Foo"
+          }
+        },
+        "optionalDate" : {
+          "type" : "string",
+          "format" : "date-time"
+        },
         "optionalDouble" : {
           "type" : "number",
           "format" : "double"
+        },
+        "optionalDoubleObject" : {
+          "type" : "number",
+          "format" : "double"
+        },
+        "optionalEnum" : {
+          "type" : "string",
+          "enum" : [ "VALUE1", "value_2" ]
+        },
+        "optionalFloatObject" : {
+          "type" : "number",
+          "format" : "float"
         },
         "optionalFoo" : {
           "$ref" : "#/definitions/Foo"
@@ -59,19 +85,25 @@
           "format" : "int32"
         },
         "optionalInteger" : {
-          "$ref" : "#/definitions/Integer"
+          "type" : "integer",
+          "format" : "int32"
         },
         "optionalLong" : {
           "type" : "integer",
           "format" : "int64"
         },
+        "optionalLongObject" : {
+          "type" : "integer",
+          "format" : "int64"
+        },
+        "optionalSimpleDate" : {
+          "type" : "string",
+          "format" : "date"
+        },
         "optionalString" : {
-          "$ref" : "#/definitions/String"
+          "type" : "string"
         }
       }
-    },
-    "String" : {
-      "type" : "object"
     }
   }
 }
