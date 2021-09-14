@@ -179,7 +179,7 @@ public class RestServletRequestParamReaderTest {
   
   @Test
   public void parseIntegerError() throws ServiceException {
-    checkContentParseError("{\"objInt\":\"invalid\"}", "field 'objInt'", "Integer", "invalid number");
+    checkContentParseError("{\"objInt\":\"invalid\"}", "field 'objInt'", "int", "invalid number");
   }
 
   @Test
@@ -190,7 +190,7 @@ public class RestServletRequestParamReaderTest {
 
   @Test
   public void parseLongError() throws ServiceException {
-    checkContentParseError("{\"objLong\":\"invalid\"}", "field 'objLong'", "Long", "invalid number");
+    checkContentParseError("{\"objLong\":\"invalid\"}", "field 'objLong'", "long", "invalid number");
   }
 
   @Test

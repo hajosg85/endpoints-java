@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 dependencies {
-  compile project(':endpoints-framework')
-  compile group: 'javax.inject', name: 'javax.inject', version: javaxinjectVersion
-  compile group: 'junit', name: 'junit', version: junitVersion
-  compile group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
-  compile group: 'com.google.truth', name: 'truth', version: truthVersion
+  implementation project(':endpoints-framework')
+  implementation group: 'javax.inject', name: 'javax.inject', version: javaxinjectVersion
+  implementation group: 'junit', name: 'junit', version: junitVersion
+  implementation group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
+  implementation group: 'com.google.truth', name: 'truth', version: truthVersion
 }

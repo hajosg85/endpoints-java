@@ -49,7 +49,7 @@ subprojects {
 
   jacocoTestReport {
     reports {
-      xml.enabled true
+      xml.required = true
     }
   }
 }
@@ -59,70 +59,63 @@ def configureMaven(project, projectName, projectDescription) {
   def ossrhUsername = project.findProperty('ossrhUsername')
   def ossrhPassword = project.findProperty('ossrhPassword')
   configure(project) {
-    apply plugin: 'maven'
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
     apply plugin: 'signing'
 
-    task sourceJar(type: Jar, dependsOn: classes) {
-      classifier = 'sources'
-      from sourceSets.main.allSource
+    java {
+      withJavadocJar()
+      withSourcesJar()
     }
 
-    task javadocJar(type: Jar) {
-      classifier = 'javadoc'
-      from javadoc
-    }
-
-    artifacts {
-      archives sourceJar, javadocJar
-    }
-
-    signing {
-      required { gradle.taskGraph.hasTask('uploadArchives') }
-      sign configurations.archives
-    }
-
-    uploadArchives {
+    publishing {
       repositories {
-        mavenDeployer {
-          beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-          repository(url: "https://aodocs.jfrog.io/aodocs/aodocs-java-release/") {
-            authentication(userName: ossrhUsername, password: ossrhPassword)
+        maven {
+          def releasesRepoUrl = "https://aodocs.jfrog.io/aodocs/aodocs-java-release/"
+          def snapshotsRepoUrl = "https://aodocs.jfrog.io/aodocs/aodocs-java-snapshot/"
+          url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+          credentials {
+            username = ossrhUsername
+            password = ossrhPassword
           }
-
-          snapshotRepository(url: "https://aodocs.jfrog.io/aodocs/aodocs-java-snapshot/") {
-            authentication(userName: ossrhUsername, password: ossrhPassword)
-          }
-          
-          pom.project {
-            name projectName
-            description projectDescription
-            packaging 'jar'
-            url 'https://cloud.google.com/endpoints/docs/frameworks/java'
+        }
+      }
+      publications  {
+        mavenJava(MavenPublication) {
+          pom {
+            name = projectName
+            description = projectDescription
+            packaging = 'jar'
+            url = 'https://cloud.google.com/endpoints/docs/frameworks/java'
 
             scm {
-              connection 'scm:git:https://github.com/AODocs/endpoints-java.git'
-              developerConnection 'scm:git:https://github.com/AODocs/endpoints-java.git'
-              url 'scm:git:https://github.com/AODocs/endpoints-java.git'
+              connection = 'scm:git:https://github.com/AODocs/endpoints-java.git'
+              developerConnection = 'scm:git:https://github.com/AODocs/endpoints-java.git'
+              url = 'scm:git:https://github.com/AODocs/endpoints-java.git'
             }
 
             licenses {
               license {
-                name 'The Apache License, Version 2.0'
-                url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                name = 'The Apache License, Version 2.0'
+                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
               }
             }
 
             developers {
               developer {
-                id 'tangd'
-                name 'Daniel Tang'
-                email 'tangd@google.com'
+                id = 'tangd'
+                name = 'Daniel Tang'
+                email = 'tangd@google.com'
               }
             }
           }
         }
       }
+    }
+
+    signing {
+      required { gradle.taskGraph.hasTask('publish') }
+      sign publishing.publications.mavenJava
     }
   }
 }

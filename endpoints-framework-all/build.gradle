@@ -16,7 +16,7 @@ jar {
 def repackagedDir = 'endpoints.repackaged'
 
 shadowJar {
-  classifier = null
+  archiveClassifier = null
   relocate 'org.apache', "${repackagedDir}.org.apache"
   relocate 'org.yaml', "${repackagedDir}.org.yaml"
   relocate 'org.joda', "${repackagedDir}.org.joda"
@@ -38,9 +38,9 @@ artifacts {
 }
 
 dependencies {
-  include project(':endpoints-framework')
-  compile group: 'com.google.appengine', name: 'appengine-api-1.0-sdk', version: appengineVersion
-  compile group: 'javax.servlet', name: 'servlet-api', version: servletVersion
+  implementation project(':endpoints-framework')
+  implementation group: 'com.google.appengine', name: 'appengine-api-1.0-sdk', version: appengineVersion
+  implementation group: 'javax.servlet', name: 'servlet-api', version: servletVersion
 }
 
 configureMaven(project, 'Endpoints Framework', 'A framework for building RESTful web APIs.')

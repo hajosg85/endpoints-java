@@ -103,6 +103,26 @@
     }
   },
   "definitions": {
+    "Details": {
+      "type": "object",
+      "properties": {
+        "detail": {
+          "type": "string"
+        },
+        "parameterViolations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ParameterViolations"
+          }
+        },
+        "reason": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
     "GoogleJsonErrorContainer": {
       "type": "object",
       "properties": {
@@ -112,6 +132,12 @@
             "code": {
               "type": "integer",
               "format": "int32"
+            },
+            "details": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Details"
+              }
             },
             "errors": {
               "type": "array",
@@ -140,6 +166,17 @@
               "type": "string"
             }
           }
+        }
+      }
+    },
+    "ParameterViolations": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "parameter": {
+          "type": "string"
         }
       }
     }

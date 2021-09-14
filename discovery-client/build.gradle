@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 apply plugin: 'java'
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 
 
 group = 'com.google.apis'
@@ -26,13 +26,12 @@ targetCompatibility = 1.8
 jar.manifest.attributes("Built-By": "Google")
 jar.manifest.attributes("Build-Jdk": "1.8.x")
 
-task sourceJar(type: Jar) {
-  classifier = 'sources'
-  from sourceSets.main.allJava
+java {
+  withSourcesJar()
 }
 
 artifacts {
-    archives sourceJar
+    archives sourcesJar
 }
 
 repositories {
@@ -40,7 +39,7 @@ repositories {
 }
 
 dependencies {
-  compile module(group: 'com.google.api-client', name: 'google-api-client', version: "1.30.4") {
+  implementation module(group: 'com.google.api-client', name: 'google-api-client', version: "1.30.4") {
     module(group: 'com.google.http-client', name: 'google-http-client-jackson2', version: "1.32.1") {
       dependency("com.fasterxml.jackson.core:jackson-core:2.10.0")
       dependency("com.google.http-client:google-http-client:1.32.1")

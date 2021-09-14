@@ -15,7 +15,7 @@
  */
 
 dependencies {
-  compile project(':test-compat')
+  implementation project(':test-compat')
   appengineSdk "com.google.appengine:appengine-java-sdk:${appengineVersion}"
-  compile group: 'com.google.appengine', name: 'appengine-endpoints', version: appengineVersion
+  implementation group: 'com.google.appengine', name: 'appengine-endpoints', version: appengineVersion
 }
