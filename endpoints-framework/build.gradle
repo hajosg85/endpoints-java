@@ -19,7 +19,7 @@ plugins {
 
 configurations {
   include
-  compile.extendsFrom include
+  compileOnly.extendsFrom include
 }
 
 jar {
@@ -71,26 +71,32 @@ task copyTestResources(type: Copy) {
 processTestResources.dependsOn copyTestResources
 
 dependencies {
-  api project(":discovery-client")
+  include(project(":discovery-client"))  {
+    // We already include all of the dependencies needed for the discovery
+    // client, and they are often newer versions. Leaving this out can cause
+    // Android Studio to confuse different versions of Jackson 2 and Guava,
+    // leading to test failures.
+    transitive = false
+  }
   api (group: 'com.google.guava', name: 'guava', version: guavaVersion) { force = true }
   api (group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: jacksonVersion)
-  implementation (group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jacksonVersion)
+  api (group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jacksonVersion)
   api (group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion)
-  implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-parameter-names', version: jacksonVersion
-  implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: jacksonVersion
+  api group: 'com.fasterxml.jackson.module', name: 'jackson-module-parameter-names', version: jacksonVersion
+  api group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: jacksonVersion
   api group: 'com.google.appengine', name: 'appengine-api-1.0-sdk', version: appengineVersion
-  implementation group: 'com.google.flogger', name: 'flogger', version: floggerVersion
-  runtimeOnly group: 'com.google.flogger', name: 'flogger-system-backend', version: floggerVersion
+  api group: 'com.google.flogger', name: 'flogger', version: floggerVersion
+  implementation group: 'com.google.flogger', name: 'flogger-system-backend', version: floggerVersion
   api(group: 'com.google.http-client', name: 'google-http-client-jackson2', version: httpClientVersion) {
     exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
   }
-  implementation(group: 'com.google.api-client', name: 'google-api-client', version: apiclientVersion)
-  implementation(group: 'com.google.api-client', name: 'google-api-client-appengine', version: apiclientVersion)
-  implementation group: 'com.google.code.findbugs', name: 'jsr305', version: findbugsVersion
+  api(group: 'com.google.api-client', name: 'google-api-client', version: apiclientVersion)
+  api(group: 'com.google.api-client', name: 'google-api-client-appengine', version: apiclientVersion)
+  compileOnly group: 'com.google.code.findbugs', name: 'jsr305', version: findbugsVersion
   api group: 'commons-fileupload', name: 'commons-fileupload', version: fileUploadVersion
   api group: 'io.swagger', name: 'swagger-models', version: swaggerVersion
   api group: 'io.swagger', name: 'swagger-core', version: swaggerVersion
-  implementation group: 'org.slf4j', name: 'slf4j-nop', version: slf4jVersion
+  compileOnly group: 'org.slf4j', name: 'slf4j-nop', version: slf4jVersion
 
   api group: 'javax.servlet', name: 'servlet-api', version: servletVersion
   compileOnly group: 'com.google.auto.value', name: 'auto-value-annotations', version: autoValueVersion

@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
+plugins {
+  id 'java-library'
+}
+
 configureMaven(
     project,
     'Endpoints Framework Guice Extension',
     'Extension to configure the Endpoints Framework via Guice.')
 
 dependencies {
-  implementation project(':endpoints-framework')
-  implementation group: 'com.google.inject', name: 'guice', version: guiceVersion
-  implementation group: 'com.google.inject.extensions', name: 'guice-servlet', version: guiceVersion
+  compileOnly project(':endpoints-framework')
+  api group: 'com.google.inject', name: 'guice', version: guiceVersion
+  api group: 'com.google.inject.extensions', name: 'guice-servlet', version: guiceVersion
 
   testImplementation project(':test-utils')
   testImplementation group: 'junit', name: 'junit', version: junitVersion

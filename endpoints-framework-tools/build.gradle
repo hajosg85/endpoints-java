@@ -30,8 +30,9 @@ apply plugin: 'application'
 mainClassName = 'com.google.api.server.spi.tools.EndpointsTool'
 
 dependencies {
-  implementation project(':endpoints-framework')
-  implementation group: 'com.google.appengine', name: 'appengine-tools-sdk', version: appengineVersion
+  compileOnly project(':discovery-client')
+  api project(':endpoints-framework')
+  api group: 'com.google.appengine', name: 'appengine-tools-sdk', version: appengineVersion
 
   testImplementation project(':test-utils')
   testImplementation group: 'junit', name: 'junit', version: junitVersion

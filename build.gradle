@@ -82,6 +82,7 @@ def configureMaven(project, projectName, projectDescription) {
       }
       publications  {
         mavenJava(MavenPublication) {
+          from components.java
           pom {
             name = projectName
             description = projectDescription

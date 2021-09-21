@@ -1,5 +1,6 @@
 plugins {
   id 'com.github.johnrengelman.shadow' version '5.1.0'
+  id 'java-library'
 }
 
 configurations {
@@ -38,9 +39,9 @@ artifacts {
 }
 
 dependencies {
-  implementation project(':endpoints-framework')
-  implementation group: 'com.google.appengine', name: 'appengine-api-1.0-sdk', version: appengineVersion
-  implementation group: 'javax.servlet', name: 'servlet-api', version: servletVersion
+  compileOnly project(':endpoints-framework')
+  api group: 'com.google.appengine', name: 'appengine-api-1.0-sdk', version: appengineVersion
+  api group: 'javax.servlet', name: 'servlet-api', version: servletVersion
 }
 
 configureMaven(project, 'Endpoints Framework', 'A framework for building RESTful web APIs.')
