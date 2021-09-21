@@ -125,7 +125,7 @@ public final class SwaggerSubject extends Subject {
   private void normalizeRequiredPropertyList(Swagger swagger) {
     if (swagger.getDefinitions() != null) {
       swagger.getDefinitions().values().stream()
-          .filter(Predicates.instanceOf(ModelImpl.class))
+          .filter(clazz -> clazz instanceof ModelImpl)
           .map(model -> (ModelImpl) model)
           .forEach(model -> model.setRequired(model.getRequired()));
     }

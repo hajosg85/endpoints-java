@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+plugins {
+  id 'java-library'
+}
 
 configurations {
   include
@@ -68,52 +71,41 @@ task copyTestResources(type: Copy) {
 processTestResources.dependsOn copyTestResources
 
 dependencies {
-  include(project(":discovery-client")) {
-    // We already include all of the dependencies needed for the discovery
-    // client, and they are often newer versions. Leaving this out can cause
-    // Android Studio to confuse different versions of Jackson 2 and Guava,
-    // leading to test failures.
-    transitive = false
-  }
-  compile group: 'com.google.guava', name: 'guava', version: guavaVersion
-  compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: jacksonVersion
-  compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jacksonVersion
-  compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
-  compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-parameter-names', version: jacksonVersion
-  compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: jacksonVersion
-  compile group: 'com.google.appengine', name: 'appengine-api-1.0-sdk', version: appengineVersion
-  compile group: 'com.google.flogger', name: 'flogger', version: floggerVersion
-  runtime group: 'com.google.flogger', name: 'flogger-system-backend', version: floggerVersion
-  compile(group: 'com.google.http-client', name: 'google-http-client-jackson2', version: httpClientVersion) {
-    exclude group: 'com.google.guava', module: 'guava-jdk5'
+  api project(":discovery-client")
+  api (group: 'com.google.guava', name: 'guava', version: guavaVersion) { force = true }
+  api (group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: jacksonVersion)
+  implementation (group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jacksonVersion)
+  api (group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion)
+  implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-parameter-names', version: jacksonVersion
+  implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: jacksonVersion
+  api group: 'com.google.appengine', name: 'appengine-api-1.0-sdk', version: appengineVersion
+  implementation group: 'com.google.flogger', name: 'flogger', version: floggerVersion
+  runtimeOnly group: 'com.google.flogger', name: 'flogger-system-backend', version: floggerVersion
+  api(group: 'com.google.http-client', name: 'google-http-client-jackson2', version: httpClientVersion) {
     exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
   }
-  compile(group: 'com.google.api-client', name: 'google-api-client', version: apiclientVersion) {
-    exclude group: 'com.google.guava', module: 'guava-jdk5'
-  }
-  compile(group: 'com.google.api-client', name: 'google-api-client-appengine', version: apiclientVersion) {
-    exclude group: 'com.google.guava', module: 'guava-jdk5'
-  }
-  compile group: 'com.google.code.findbugs', name: 'jsr305', version: findbugsVersion
-  compile group: 'commons-fileupload', name: 'commons-fileupload', version: fileUploadVersion
-  compile group: 'io.swagger', name: 'swagger-models', version: swaggerVersion
-  compile group: 'io.swagger', name: 'swagger-core', version: swaggerVersion
-  compile group: 'org.slf4j', name: 'slf4j-nop', version: slf4jVersion
+  implementation(group: 'com.google.api-client', name: 'google-api-client', version: apiclientVersion)
+  implementation(group: 'com.google.api-client', name: 'google-api-client-appengine', version: apiclientVersion)
+  implementation group: 'com.google.code.findbugs', name: 'jsr305', version: findbugsVersion
+  api group: 'commons-fileupload', name: 'commons-fileupload', version: fileUploadVersion
+  api group: 'io.swagger', name: 'swagger-models', version: swaggerVersion
+  api group: 'io.swagger', name: 'swagger-core', version: swaggerVersion
+  implementation group: 'org.slf4j', name: 'slf4j-nop', version: slf4jVersion
 
-  compileOnly group: 'javax.servlet', name: 'servlet-api', version: servletVersion
-  compileOnly "com.google.auto.value:auto-value:1.2"
-  annotationProcessor "com.google.auto.value:auto-value:1.2"
+  api group: 'javax.servlet', name: 'servlet-api', version: servletVersion
+  compileOnly group: 'com.google.auto.value', name: 'auto-value-annotations', version: autoValueVersion
+  annotationProcessor group: 'com.google.auto.value', name: 'auto-value', version: autoValueVersion
 
-  testCompile project(':test-utils')
-  testCompile group: 'junit', name: 'junit', version: junitVersion
-  testCompile group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
-  testCompile group: 'org.skyscreamer', name: 'jsonassert', version: jsonassertVersion
-  testCompile group: 'com.google.truth', name: 'truth', version: truthVersion
-  testCompile group: 'com.google.appengine', name: 'appengine-testing', version: appengineVersion
-  testCompile group: 'com.google.appengine', name: 'appengine-api-stubs', version: appengineVersion
-  testCompile group: 'org.springframework', name: 'spring-test', version: springtestVersion
-  testCompile group: 'com.google.guava', name: 'guava-testlib', version: guavaVersion
-  testCompile (group: 'io.swagger', name: 'swagger-validator', version: '1.0.6') {
+  testImplementation project(':test-utils')
+  testImplementation group: 'junit', name: 'junit', version: junitVersion
+  testImplementation group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
+  testImplementation group: 'org.skyscreamer', name: 'jsonassert', version: jsonassertVersion
+  testImplementation group: 'com.google.truth', name: 'truth', version: truthVersion
+  testImplementation group: 'com.google.appengine', name: 'appengine-testing', version: appengineVersion
+  testImplementation group: 'com.google.appengine', name: 'appengine-api-stubs', version: appengineVersion
+  testImplementation group: 'org.springframework', name: 'spring-test', version: springtestVersion
+  testImplementation group: 'com.google.guava', name: 'guava-testlib', version: guavaVersion
+  testImplementation (group: 'io.swagger', name: 'swagger-validator', version: '1.0.7') {
     exclude group: 'javax.servlet', module: 'javax.servlet-api'
     exclude group: 'ch.qos.logback', module: 'logback-classic'
   }
