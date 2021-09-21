@@ -103,6 +103,7 @@ dependencies {
   annotationProcessor group: 'com.google.auto.value', name: 'auto-value', version: autoValueVersion
 
   testImplementation project(':test-utils')
+  testImplementation project(':discovery-client')
   testImplementation group: 'junit', name: 'junit', version: junitVersion
   testImplementation group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
   testImplementation group: 'org.skyscreamer', name: 'jsonassert', version: jsonassertVersion

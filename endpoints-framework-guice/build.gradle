@@ -29,6 +29,7 @@ dependencies {
   api group: 'com.google.inject.extensions', name: 'guice-servlet', version: guiceVersion
 
   testImplementation project(':test-utils')
+  testImplementation project(':endpoints-framework')
   testImplementation group: 'junit', name: 'junit', version: junitVersion
   testImplementation group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
 }
