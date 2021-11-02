@@ -21,10 +21,16 @@ import com.google.api.server.spi.EndpointMethod;
  * Implementation of functionality common to all implementations of {@link ParamReader}.
  */
 public abstract class AbstractParamReader implements ParamReader {
+  private final Object apiService;
   private final EndpointMethod method;
 
-  protected AbstractParamReader(EndpointMethod method) {
+  protected AbstractParamReader(Object apiService, EndpointMethod method) {
+    this.apiService = apiService;
     this.method = method;
+  }
+
+  protected Object getApiService() {
+    return apiService;
   }
 
   protected EndpointMethod getMethod() {
