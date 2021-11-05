@@ -69,7 +69,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 
 /**
  * Generates discovery documents without contacting the discovery generator service.
@@ -407,6 +410,16 @@ public class DiscoveryGenerator {
     if (parameterConfig.getDescription() != null) {
       schema.setDescription(parameterConfig.getDescription());
     }
+    Optional.ofNullable(parameterConfig.getValidationConstraints()).ifPresent(constraints -> {
+      if (constraints.getPattern() != null) {
+        schema.setPattern(constraints.getPattern());
+      }
+      // DecimalMin/Max annotations take precedence over Min/Max
+      Stream.of(constraints.getDecimalMin(), constraints.getMin()).filter(Objects::nonNull)
+              .findFirst().map(Objects::toString).ifPresent(schema::setMinimum);
+      Stream.of(constraints.getDecimalMax(), constraints.getMax()).filter(Objects::nonNull)
+              .findFirst().map(Objects::toString).ifPresent(schema::setMaximum);
+    });
     return schema;
   }
 

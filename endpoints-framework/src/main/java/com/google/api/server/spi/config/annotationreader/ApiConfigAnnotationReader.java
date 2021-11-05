@@ -31,6 +31,7 @@ import com.google.api.server.spi.config.model.ApiConfig;
 import com.google.api.server.spi.config.model.ApiIssuerAudienceConfig;
 import com.google.api.server.spi.config.model.ApiIssuerConfigs;
 import com.google.api.server.spi.config.model.ApiMethodConfig;
+import com.google.api.server.spi.config.model.ApiValidationConstraints;
 import com.google.api.server.spi.config.model.ApiParameterConfig;
 import com.google.api.server.spi.config.model.ApiSerializationConfig;
 import com.google.common.collect.ImmutableList;
@@ -366,39 +367,55 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
     }
 
     for (int i = 0; i < parameterAnnotations.length; i++) {
-      Annotation parameterName =
-          AnnotationUtil.getNamedParameter(method, i, annotationTypes.get("Named"));
-      Annotation description =
-          AnnotationUtil.getParameterAnnotation(method, i, annotationTypes.get("Description"));
-      Annotation nullable =
-          AnnotationUtil.getNullableParameter(method, i, annotationTypes.get("Nullable"));
-      Annotation defaultValue =
-          AnnotationUtil.getParameterAnnotation(method, i, annotationTypes.get("DefaultValue"));
-      readMethodRequestParameter(methodConfig, parameterName, description, nullable, defaultValue,
-          parameterTypes[i]);
+      ApiConfigAnnotations configAnnotations = new ApiConfigAnnotations(method, i, annotationTypes);
+      readMethodRequestParameter(methodConfig, parameterTypes[i], configAnnotations);
     }
   }
 
-  private void readMethodRequestParameter(ApiMethodConfig methodConfig, Annotation parameterName,
-      Annotation description, Annotation nullable, Annotation defaultValue, TypeToken<?> type)
+  private void readMethodRequestParameter(ApiMethodConfig methodConfig, TypeToken<?> type, ApiConfigAnnotations annotations)
       throws IllegalArgumentException, SecurityException, IllegalAccessException, 
       InvocationTargetException, NoSuchMethodException {
     String parameterNameString = null;
-    if (parameterName != null) {
-      parameterNameString = getAnnotationProperty(parameterName, "value");
+    if (annotations.getParameterName() != null) {
+      parameterNameString = getAnnotationProperty(annotations.getParameterName(), "value");
     }
     String descriptionString = null;
-    if (description != null) {
-      descriptionString = getAnnotationProperty(description, "value");
+    if (annotations.getDescription() != null) {
+      descriptionString = getAnnotationProperty(annotations.getDescription(), "value");
     }
     String defaultValueString = null;
-    if (defaultValue != null) {
-      defaultValueString = getAnnotationProperty(defaultValue, "value");
+    if (annotations.getDefaultValue() != null) {
+      defaultValueString = getAnnotationProperty(annotations.getDefaultValue(), "value");
     }
-
+    String patternString = null;
+    if (annotations.getPattern() != null) {
+      patternString = getAnnotationProperty(annotations.getPattern(), "regexp");
+    }
+    Long minLong = null;
+    if (annotations.getMin() != null) {
+      minLong = getAnnotationProperty(annotations.getMin(), "value");
+    }
+    Long maxLong = null;
+    if (annotations.getMax() != null) {
+      maxLong = getAnnotationProperty(annotations.getMax(), "value");
+    }
+    String decimalMinString = null;
+    Boolean decimalMinInclusive = null;
+    if (annotations.getDecimalMin() != null) {
+      decimalMinString = getAnnotationProperty(annotations.getDecimalMin(), "value");
+      decimalMinInclusive = getAnnotationProperty(annotations.getDecimalMin(), "inclusive");
+    }
+    String decimalMaxString = null;
+    Boolean decimalMaxInclusive = null;
+    if (annotations.getDecimalMax() != null) {
+      decimalMaxString = getAnnotationProperty(annotations.getDecimalMax(), "value");
+      decimalMaxInclusive = getAnnotationProperty(annotations.getDecimalMax(), "inclusive");
+    }
+  
+    ApiValidationConstraints validationConstraints = new ApiValidationConstraints(patternString, minLong, maxLong, decimalMinString, decimalMaxString, decimalMinInclusive, decimalMaxInclusive);
     ApiParameterConfig parameterConfig =
-        methodConfig.addParameter(parameterNameString, descriptionString, nullable != null, 
-            defaultValueString, type);
+        methodConfig.addParameter(parameterNameString, descriptionString, annotations.getNullable() != null, 
+            defaultValueString, type, validationConstraints);
 
     Annotation apiSerializer =
         type.getRawType().getAnnotation(annotationTypes.get("ApiTransformer"));

@@ -35,6 +35,7 @@ public class ApiParameterConfig {
   private final boolean nullable;
   private final String defaultValue;
   private final TypeToken<?> type;
+  private final ApiValidationConstraints validationConstraints;
 
   private Class<? extends Transformer<?, ?>> serializer;
   private Class<? extends Transformer<?, ?>> repeatedItemSerializer;
@@ -58,7 +59,8 @@ public class ApiParameterConfig {
   }
 
   public ApiParameterConfig(ApiMethodConfig apiMethodConfig, String name, String description,
-      boolean nullable, String defaultValue, TypeToken<?> type, TypeLoader typeLoader) {
+          boolean nullable, String defaultValue, TypeToken<?> type, TypeLoader typeLoader,
+          ApiValidationConstraints validationConstraints) {
     this.apiMethodConfig = apiMethodConfig;
     this.name = name;
     this.description = description;
@@ -68,6 +70,7 @@ public class ApiParameterConfig {
     this.serializer = null;
     this.repeatedItemSerializer = null;
     this.typeLoader = typeLoader;
+    this.validationConstraints = validationConstraints;
   }
 
   public ApiParameterConfig(ApiParameterConfig original, ApiMethodConfig apiMethodConfig) {
@@ -80,6 +83,7 @@ public class ApiParameterConfig {
     this.serializer = original.serializer;
     this.repeatedItemSerializer = original.repeatedItemSerializer;
     this.typeLoader = original.typeLoader;
+    this.validationConstraints = new ApiValidationConstraints(original.validationConstraints);
   }
 
   @Override
@@ -94,7 +98,8 @@ public class ApiParameterConfig {
           && Objects.equals(type, parameter.type)
           && Objects.equals(serializer, parameter.serializer)
           && Objects.equals(repeatedItemSerializer, parameter.repeatedItemSerializer)
-          && Objects.equals(typeLoader, parameter.typeLoader);
+          && Objects.equals(typeLoader, parameter.typeLoader)
+          && Objects.equals(validationConstraints, parameter.validationConstraints);
     } else {
       return false;
     }
@@ -103,7 +108,7 @@ public class ApiParameterConfig {
   @Override
   public int hashCode() {
     return Objects.hash(name, nullable, defaultValue, type, serializer, repeatedItemSerializer,
-        typeLoader);
+        typeLoader, validationConstraints);
   }
 
   public ApiMethodConfig getApiMethodConfig() {
@@ -128,6 +133,10 @@ public class ApiParameterConfig {
 
   public TypeToken<?> getType() {
     return type;
+  }
+
+  public ApiValidationConstraints getValidationConstraints() {
+    return validationConstraints;
   }
 
   /**

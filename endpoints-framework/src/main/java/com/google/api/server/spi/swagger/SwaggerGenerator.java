@@ -99,6 +99,7 @@ import io.swagger.models.properties.RefProperty;
 import io.swagger.models.properties.StringProperty;
 import io.swagger.models.refs.RefType;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -480,6 +481,25 @@ public class SwaggerGenerator {
           if (!Strings.isEmptyOrWhitespace(defaultValue)) {
             parameter.setDefaultValue(defaultValue);
           }
+          Optional.ofNullable(parameterConfig.getValidationConstraints()).ifPresent(constraints -> {
+            String pattern = constraints.getPattern();
+            if (!Strings.isEmptyOrWhitespace(pattern)) {
+              parameter.setPattern(pattern);
+            }
+            // DecimalMin/Max annotations take precedence over Min/Max
+            if (constraints.getDecimalMin() != null) {
+              parameter.setMinimum(new BigDecimal(constraints.getDecimalMin()));
+              parameter.setExclusiveMinimum(!constraints.getDecimalMinInclusive());
+            } else if (constraints.getMin() != null) {
+              parameter.setMinimum(new BigDecimal(constraints.getMin()));
+            }
+            if (constraints.getDecimalMax() != null) {
+              parameter.setMaximum(new BigDecimal(constraints.getDecimalMax()));
+              parameter.setExclusiveMaximum(!constraints.getDecimalMaxInclusive());
+            } else if (constraints.getMax() != null) {
+              parameter.setMaximum(new BigDecimal(constraints.getMax()));
+            }
+          });
           boolean required = isPathParameter || (!parameterConfig.getNullable()
               && defaultValue == null);
           if (parameterConfig.isRepeated()) {
