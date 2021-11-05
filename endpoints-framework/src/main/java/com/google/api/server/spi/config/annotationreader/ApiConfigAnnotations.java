@@ -19,6 +19,7 @@ final class ApiConfigAnnotations {
 	private Annotation max;
 	private Annotation decimalMin;
 	private Annotation decimalMax;
+	private Annotation size;
 	
 	public ApiConfigAnnotations(Method method, int parameterIndex, Map<String, Class<? extends Annotation>> annotationTypes) {
 		this.parameterName = getNamedParameter(method, parameterIndex, annotationTypes.get("Named"));
@@ -30,6 +31,7 @@ final class ApiConfigAnnotations {
 		this.max = getParameterAnnotation(method, parameterIndex, annotationTypes.get("Max"));
 		this.decimalMin = getParameterAnnotation(method, parameterIndex, annotationTypes.get("DecimalMin"));
 		this.decimalMax = getParameterAnnotation(method, parameterIndex, annotationTypes.get("DecimalMax"));
+		this.size = getParameterAnnotation(method, parameterIndex, annotationTypes.get("Size"));
 	}
 	
 	public Annotation getParameterName() {
@@ -66,5 +68,9 @@ final class ApiConfigAnnotations {
 	
 	public Annotation getDecimalMax() {
 		return decimalMax;
+	}
+	
+	public Annotation getSize() {
+		return size;
 	}
 }

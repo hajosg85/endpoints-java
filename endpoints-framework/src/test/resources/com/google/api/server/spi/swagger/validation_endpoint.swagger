@@ -50,7 +50,8 @@
             "format" : "int64",
             "minimum": 10,
             "maximum": 20
-          }, {
+          },
+          {
             "name" : "decimalMinMaxParam",
             "in" : "query",
             "required" : true,
@@ -60,6 +61,26 @@
             "exclusiveMinimum" : true,
             "maximum": 4,
             "exclusiveMaximum" : false
+          },
+          {
+            "name" : "sizeParam",
+            "in" : "query",
+            "required" : true,
+            "type" : "string",
+            "minLength": 3,
+            "maxLength" : 6
+          },
+          {
+            "name" : "arraySizeParam",
+            "in" : "query",
+            "required" : false,
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            },
+            "collectionFormat" : "multi",
+            "maxItems" : 3,
+            "minItems" : 2
           }
         ],
         "responses": {

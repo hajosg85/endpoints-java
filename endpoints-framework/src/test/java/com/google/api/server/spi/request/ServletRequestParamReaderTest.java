@@ -62,6 +62,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -996,6 +998,21 @@ public class ServletRequestParamReaderTest {
       fail("expected bad request exception");
     } catch (BadRequestException ex) {
       assertTrue("failed for unexpected reason: " + ex.getMessage(), ex.getMessage().contains("resource.integerValue must be greater than"));
+    }
+  }
+  
+  @Test
+  public void testSizeAnnotation_invalid() throws Exception {
+    class TestPatternAnnotation {
+      @SuppressWarnings("unused")
+      public void test(@Named("testParam") @Size(min = 3, max = 5) String testParam) {}
+    }
+    try {
+      readParameters("{\"testParam\":\"too long string\"}",
+            TestPatternAnnotation.class.getDeclaredMethod("test", String.class), new TestPatternAnnotation());
+      fail("expected bad request exception");
+    } catch (BadRequestException ex) {
+      assertTrue("failed for unexpected reason: " + ex.getMessage(), ex.getMessage().contains("testParam size must be between 3 and 5"));
     }
   }
 

@@ -411,8 +411,17 @@ public class ApiConfigAnnotationReader implements ApiConfigSource {
       decimalMaxString = getAnnotationProperty(annotations.getDecimalMax(), "value");
       decimalMaxInclusive = getAnnotationProperty(annotations.getDecimalMax(), "inclusive");
     }
-  
-    ApiValidationConstraints validationConstraints = new ApiValidationConstraints(patternString, minLong, maxLong, decimalMinString, decimalMaxString, decimalMinInclusive, decimalMaxInclusive);
+    Integer minSize = null;
+    Integer maxSize = null;
+    if (annotations.getSize() != null) {
+      minSize = getAnnotationProperty(annotations.getSize(), "min");
+      maxSize = getAnnotationProperty(annotations.getSize(), "max");
+    }
+    
+    ApiValidationConstraints validationConstraints = new ApiValidationConstraints(
+            patternString, minLong, maxLong, 
+            decimalMinString, decimalMaxString, decimalMinInclusive, decimalMaxInclusive, 
+            minSize, maxSize);
     ApiParameterConfig parameterConfig =
         methodConfig.addParameter(parameterNameString, descriptionString, annotations.getNullable() != null, 
             defaultValueString, type, validationConstraints);
