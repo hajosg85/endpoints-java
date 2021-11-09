@@ -25,9 +25,11 @@
       "id": "validation.create",
       "parameterOrder": [
         "pathParam",
+        "arraySizeParam",
         "decimalMinMaxParam",
         "minMaxParam",
-        "queryParam"
+        "queryParam",
+        "sizeParam"
       ],
       "parameters": {
         "pathParam": {
@@ -57,8 +59,18 @@
           "format": "double",
           "minimum": "2.3",
           "maximum": "4"
+        },
+        "sizeParam": {
+          "location": "query",
+          "required": true,
+          "type": "string"
+        },
+        "arraySizeParam" : {
+          "location" : "query",
+          "repeated" : true,
+          "required" : true,
+          "type" : "string"
         }
-        
       },
       "path": "{pathParam}",
       "scopes": [

@@ -15,11 +15,14 @@
  */
 package com.google.api.server.spi.testing;
 
+import java.util.List;
+
 import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
@@ -32,6 +35,8 @@ public class ValidationEndpoint {
           @Named("pathParam") @Pattern(regexp = "^\\d+$") String pathParam, 
           @Named("queryParam") @Pattern(regexp = "^[a-z]{2}$") String queryParam,
           @Named("minMaxParam") @Min(10) @Max(20) Long minMaxParam,
-          @Named("decimalMinMaxParam") @DecimalMin(value = "2.3", inclusive = false) @DecimalMax(value = "4") Double decimalMinMaxParam) {
+          @Named("decimalMinMaxParam") @DecimalMin(value = "2.3", inclusive = false) @DecimalMax(value = "4") Double decimalMinMaxParam,
+          @Named("sizeParam") @Size(min = 3, max = 6) String sizeParam,
+          @Named("arraySizeParam") @Size(min = 2, max = 3) List<String> arraySizeParam) {
   }
 }

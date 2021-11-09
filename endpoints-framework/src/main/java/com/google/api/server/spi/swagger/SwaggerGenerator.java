@@ -499,6 +499,20 @@ public class SwaggerGenerator {
             } else if (constraints.getMax() != null) {
               parameter.setMaximum(new BigDecimal(constraints.getMax()));
             }
+            if (constraints.getMinSize() != null && constraints.getMinSize() > 0) {
+              if (parameterConfig.isRepeated()) {
+                parameter.setMinItems(constraints.getMinSize());
+              } else if (parameterConfig.getType().getType() == String.class) {
+                parameter.setMinLength(constraints.getMinSize());
+              }
+            }
+            if (constraints.getMaxSize() != null && constraints.getMaxSize() < Integer.MAX_VALUE) {
+              if (parameterConfig.isRepeated()) {
+                parameter.setMaxItems(constraints.getMaxSize());
+              } else if (parameterConfig.getType().getType() == String.class) {
+                parameter.setMaxLength(constraints.getMaxSize());
+              }
+            }
           });
           boolean required = isPathParameter || (!parameterConfig.getNullable()
               && defaultValue == null);

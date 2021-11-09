@@ -201,6 +201,8 @@ public final class TypeLoader {
             loadAnnotation(classLoader, "javax.validation.constraints.DecimalMin"));
     annotationTypes.put("DecimalMax",
             loadAnnotation(classLoader, "javax.validation.constraints.DecimalMax"));
+    annotationTypes.put("Size",
+            loadAnnotation(classLoader, "javax.validation.constraints.Size"));
     return Collections.unmodifiableMap(annotationTypes);
   }
 

@@ -3,7 +3,6 @@
 - Paths
   - Configurable tag content and format
 - Parameters
-  - cardinality (minItems, maxItems)
   - other repeated param features (uniqueItems, default values)
   - empty value parameters
   - headers in params

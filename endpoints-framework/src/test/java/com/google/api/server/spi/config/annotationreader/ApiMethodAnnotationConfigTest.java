@@ -104,7 +104,7 @@ public class ApiMethodAnnotationConfigTest {
   public void testAddParameter() {
     assertEquals(0, config.getParameterConfigs().size());
 
-    ApiValidationConstraints validationConstraints = new ApiValidationConstraints("\\d{2}", 1L, 2L, "3.0", "4.0", true, false);
+    ApiValidationConstraints validationConstraints = new ApiValidationConstraints("\\d{2}", 1L, 2L, "3.0", "4.0", true, false, 5, 6);
     config.addParameter("bleh", "desc", false, null, TypeToken.of(String.class), validationConstraints);
 
     assertEquals(1, config.getParameterConfigs().size());
@@ -123,6 +123,8 @@ public class ApiMethodAnnotationConfigTest {
     assertEquals("4.0", actualValidationConstraints.getDecimalMax());
     assertEquals(Boolean.TRUE, actualValidationConstraints.getDecimalMinInclusive());
     assertEquals(Boolean.FALSE, actualValidationConstraints.getDecimalMaxInclusive());
+    assertEquals(Integer.valueOf(5), actualValidationConstraints.getMinSize());
+    assertEquals(Integer.valueOf(6), actualValidationConstraints.getMaxSize());
   }
 
   @Test
