@@ -17,7 +17,6 @@ package com.google.api.server.spi.dispatcher;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -94,6 +93,15 @@ public class PathTrieTest {
   }
   
   @Test
+  public void twoCustomMethod() {
+    assertThrows(IllegalArgumentException.class,
+            () -> PathTrie.<Integer>builder()
+                    .add(HttpMethod.GET, "discovery/{version}/rest:batchGet:batchGet", 1234)
+                    .build()
+    );
+  }
+  
+  @Test
   public void invalidCustomMethod() {
     assertThrows(IllegalArgumentException.class,
             () -> PathTrie.<Integer>builder()
@@ -151,12 +159,21 @@ public class PathTrieTest {
   @Test
   public void customMethodSamePathDifferentMethod() {
     PathTrie<Integer> trie = PathTrie.<Integer>builder()
+            .add(HttpMethod.GET, "discovery/{version}/rest", 1324)
+            .add(HttpMethod.PUT, "discovery/{version}/rest", 4123)
             .add(HttpMethod.GET, "discovery/{version}/rest:batchGet", 1234)
+            .add(HttpMethod.PUT, "discovery/{version}/rest:batchGet", 2134)
             .add(HttpMethod.GET, "discovery/{version}/rest:customList", 4321)
             .build();
   
     assertSuccessfulGetResolution(
+            trie, "discovery/v1/rest", 1324, ImmutableMap.of("version", "v1"));
+    assertSuccessfulResolution(
+            trie, HttpMethod.PUT, "discovery/v1/rest", 4123, ImmutableMap.of("version", "v1"));
+    assertSuccessfulGetResolution(
             trie, "discovery/v1/rest:batchGet", 1234, ImmutableMap.of("version", "v1"));
+    assertSuccessfulResolution(
+            trie, HttpMethod.PUT, "discovery/v1/rest:batchGet", 2134, ImmutableMap.of("version", "v1"));
     assertSuccessfulGetResolution(
             trie, "discovery/v2/rest:customList", 4321, ImmutableMap.of("version", "v2"));
   }
@@ -340,8 +357,6 @@ public class PathTrieTest {
     }
   }
   
-  
-
   @Test
   public void invalidParameterSegment() {
     String invalids = "?#[]{}";

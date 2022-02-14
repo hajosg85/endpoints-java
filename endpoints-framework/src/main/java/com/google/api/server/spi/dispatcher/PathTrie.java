@@ -18,21 +18,22 @@ package com.google.api.server.spi.dispatcher;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import com.google.common.collect.Table;
 import com.google.common.flogger.FluentLogger;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,38 +59,10 @@ public class PathTrie<T> {
   private static final CharMatcher RESERVED_URL_CHARS = CharMatcher.anyOf(":/?#[]{}");
 
   private final ImmutableMap<String, PathTrie<T>> subTries;
-  private final ImmutableMap<CompoundMethod, MethodInfo<T>> httpMethodMap;
-  
-  private static class CompoundMethod {
-    private final HttpMethod httpMethod;
-    private final String customMethod;
-    
-    CompoundMethod(HttpMethod method, String customMethod) {
-      this.httpMethod = method;
-      this.customMethod = customMethod;
-    }
-    
-    @Override
-    public int hashCode() {
-      return Objects.hash(httpMethod, customMethod);
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj instanceof PathTrie.CompoundMethod) {
-        CompoundMethod that = (CompoundMethod) obj;
-        return Objects.equals(this.httpMethod, that.httpMethod)
-                && Objects.equals(this.customMethod, that.customMethod);
-      }
-      return false;
-    }
-  }
-  
+  private final ImmutableTable<HttpMethod, String, MethodInfo<T>> httpMethodTable;
+
   private PathTrie(Builder<T> builder) {
-    this.httpMethodMap = ImmutableMap.copyOf(builder.httpMethodMap);
+    this.httpMethodTable = ImmutableTable.copyOf(builder.httpMethodTable);
     ImmutableMap.Builder<String, PathTrie<T>> subTriesBuilder = ImmutableMap.builder();
     for (Entry<String, Builder<T>> entry : builder.subBuilders.entrySet()) {
       subTriesBuilder.put(entry.getKey(), new PathTrie<>(entry.getValue()));
@@ -107,16 +80,16 @@ public class PathTrie<T> {
     Preconditions.checkNotNull(path, "path");
     List<String> pathSegments = getPathSegments(path);
     String customMethod = extractCustomMethodAndUpdatePathSegments(pathSegments);
-    return resolve(new CompoundMethod(method, customMethod), pathSegments, 0, new ArrayList<>());
+    return resolve(method, customMethod, pathSegments, 0, new ArrayList<>());
   }
 
   private Result<T> resolve(
-      CompoundMethod method, List<String> pathSegments, int index, List<String> rawParameters) {
+      HttpMethod httpMethod, String customMethod, List<String> pathSegments, int index, List<String> rawParameters) {
     if (index < pathSegments.size()) {
       String segment = pathSegments.get(index);
       PathTrie<T> subTrie = subTries.get(segment);
       if (subTrie != null) {
-        Result<T> result = subTrie.resolve(method, pathSegments, index + 1, rawParameters);
+        Result<T> result = subTrie.resolve(httpMethod, customMethod, pathSegments, index + 1, rawParameters);
         if (result != null) {
           return result;
         }
@@ -125,15 +98,15 @@ public class PathTrie<T> {
       if (subTrie != null) {
         // TODO: We likely need to enforce non-empty values here.
         rawParameters.add(segment);
-        Result<T> result = subTrie.resolve(method, pathSegments, index + 1, rawParameters);
+        Result<T> result = subTrie.resolve(httpMethod, customMethod, pathSegments, index + 1, rawParameters);
         if (result == null) {
           rawParameters.remove(rawParameters.size() - 1);
         }
         return result;
       }
       return null;
-    } else if (httpMethodMap.containsKey(method)) {
-      MethodInfo<T> methodInfo = httpMethodMap.get(method);
+    } else if (httpMethodTable.contains(httpMethod, customMethod)) {
+      MethodInfo<T> methodInfo = httpMethodTable.get(httpMethod, customMethod);
       ImmutableList<String> parameterNames = methodInfo.parameterNames;
       Preconditions.checkState(rawParameters.size() == parameterNames.size());
       Map<String, String> rawParameterMap = Maps.newHashMap();
@@ -191,7 +164,7 @@ public class PathTrie<T> {
    */
   public static class Builder<T> {
     private final Map<String, Builder<T>> subBuilders = Maps.newHashMap();
-    private final Map<CompoundMethod, MethodInfo<T>> httpMethodMap = new HashMap<>();
+    private final Table<HttpMethod, String, MethodInfo<T>> httpMethodTable = HashBasedTable.create();
     private final boolean throwOnConflict;
 
     public Builder(boolean throwOnConflict) {
@@ -211,14 +184,14 @@ public class PathTrie<T> {
       // TODO: We likely want to do something about trailing slashes here (make configurable)
       List<String> pathSegments = getPathSegments(path);
       String customMethod = extractCustomMethodAndUpdatePathSegments(pathSegments);
-      if (customMethod != null) {
+      if (!customMethod.isEmpty()) {
         Matcher matcher = CUSTOM_METHOD_NAME_PATTERN.matcher(customMethod);
         if (!matcher.matches()) {
           throw new IllegalArgumentException(
                   String.format("'%s' not a valid custom method name", customMethod));
         }
       }
-      add(new CompoundMethod(method, customMethod), path, pathSegments.iterator(), value, new ArrayList<>());
+      add(method, customMethod, path, pathSegments.iterator(), value, new ArrayList<>());
       return this;
     }
 
@@ -226,7 +199,7 @@ public class PathTrie<T> {
       return new PathTrie<>(this);
     }
 
-    private void add(CompoundMethod method, String path, Iterator<String> pathSegments, T value,
+    private void add(HttpMethod httpMethod, String customMethod, String path, Iterator<String> pathSegments, T value,
         List<String> parameterNames) {
       if (pathSegments.hasNext()) {
         String segment = pathSegments.next();
@@ -234,7 +207,7 @@ public class PathTrie<T> {
           if (segment.endsWith("}")) {
             parameterNames.add(getAndCheckParameterName(segment));
             getOrCreateSubBuilder(PARAMETER_PATH_SEGMENT)
-                .add(method, path, pathSegments, value, parameterNames);
+                .add(httpMethod, customMethod, path, pathSegments, value, parameterNames);
           } else {
             throw new IllegalArgumentException(
                 String.format("'%s' contains invalid parameter syntax: %s", path, segment));
@@ -244,17 +217,17 @@ public class PathTrie<T> {
             throw new IllegalArgumentException(
                 String.format("'%s' contains invalid path segment: %s", path, segment));
           }
-          getOrCreateSubBuilder(segment).add(method, path, pathSegments, value, parameterNames);
+          getOrCreateSubBuilder(segment).add(httpMethod, customMethod, path, pathSegments, value, parameterNames);
         }
       } else {
-        boolean pathExists = httpMethodMap.containsKey(method);
+        boolean pathExists = httpMethodTable.contains(httpMethod, customMethod);
         if (pathExists && throwOnConflict) {
           throw new IllegalArgumentException(String.format("Path '%s' is already mapped", path));
         }
         if (pathExists) {
           log.atWarning().log("Path '%s' is already mapped, but overwriting it", path);
         }
-        httpMethodMap.put(method, new MethodInfo<>(parameterNames, value));
+        httpMethodTable.put(httpMethod, customMethod, new MethodInfo<>(parameterNames, value));
       }
     }
 
@@ -291,7 +264,7 @@ public class PathTrie<T> {
   }
   
   private static String extractCustomMethodAndUpdatePathSegments(List<String> pathSegments) {
-    String customMethod = null;
+    String customMethod = "";
     if (!pathSegments.isEmpty()) {
       String lastSegment = pathSegments.get(pathSegments.size() - 1);
       String[] segmentParts = lastSegment.split(":");
