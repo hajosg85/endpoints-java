@@ -13,10 +13,18 @@
  */
 package com.google.api.server.spi.tools;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static java.lang.System.getProperty;
+import static java.lang.System.getenv;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.apache.commons.io.input.ReaderInputStream;
 
@@ -35,7 +43,9 @@ import com.google.common.io.CharSource;
  * </pre>
  */
 public class LocalClientLibGenerator implements ClientLibGenerator {
-
+  
+  private static final Logger log = Logger.getLogger(LocalClientLibGenerator.class.getName());
+  
   @VisibleForTesting
   static final String GENERATOR_EXECUTABLE = "generate_library";
   private static final String GENERATOR_DISCOVERY_FILE_OPTION = "--input=";
@@ -43,9 +53,9 @@ public class LocalClientLibGenerator implements ClientLibGenerator {
   private static final String GENERATOR_DESTINATION_DIRECTORY_OPTION = "--output_dir=";
   /* Put API version in package paths. */
   private static final String GENERATOR_API_VERSION_PACKAGE_OPTION = "--version_package";
-
+  
   private static final List<String> GENERATOR_SUPPORTED_LANGUAGES = ImmutableList.of("java");
-
+  
   /**
    * Generate the source code.
    * @param discoveryDoc Discovery document of the API
@@ -67,15 +77,18 @@ public class LocalClientLibGenerator implements ClientLibGenerator {
     File discoveryFile = File.createTempFile(GENERATOR_EXECUTABLE, "-discovery.tmp");
     try {
       IoUtil.copy(new ReaderInputStream(CharSource.wrap(discoveryDoc).openStream()), discoveryFile);
-
+  
       File generateLibOut = File.createTempFile(GENERATOR_EXECUTABLE, ".out");
       File generateLibErr = File.createTempFile(GENERATOR_EXECUTABLE, ".err");
+  
+      List<String> command = new ArrayList<>(getLibraryGeneratorCommand());
+      command.add(GENERATOR_DISCOVERY_FILE_OPTION + discoveryFile);
+      command.add(GENERATOR_LANGUAGE_OPTION + language);
+      command.add(GENERATOR_DESTINATION_DIRECTORY_OPTION + destinationDirectory.getAbsolutePath());
+      command.add(GENERATOR_API_VERSION_PACKAGE_OPTION);
+  
       ProcessBuilder builder = new ProcessBuilder()
-              .command(GENERATOR_EXECUTABLE,
-                      GENERATOR_DISCOVERY_FILE_OPTION + discoveryFile,
-                      GENERATOR_LANGUAGE_OPTION + language,
-                      GENERATOR_DESTINATION_DIRECTORY_OPTION + destinationDirectory.getAbsolutePath(),
-                      GENERATOR_API_VERSION_PACKAGE_OPTION)
+              .command(command)
               .redirectOutput(generateLibOut)
               .redirectError(generateLibErr);
       int status;
@@ -91,9 +104,38 @@ public class LocalClientLibGenerator implements ClientLibGenerator {
       } else {
         throw new IOException("Failed to generate source code. See " + generateLibErr.getAbsolutePath() + " for details");
       }
-    }
-    finally {
+    } finally {
       discoveryFile.delete();
     }
+  }
+  
+  private List<String> getLibraryGeneratorCommand() {
+    if (getProperty("os.name").toLowerCase().contains("win")) {
+      log.warning("You are using the LocalClientLibGenerator on Windows.\n"
+              + "You should specify the following environmental variables:\n"
+              + "- GOOGLE_GENERATE_LIBRARY_PYTHON to point at your Python 2.7 installation\n"
+              + "- GOOGLE_GENERATE_LIBRARY_SCRIPT_LOCATION to point at the location where your generate_library.py script was installed (it should be something like 'C:\\Users\\Armin\\AppData\\Roaming\\Python\\Python27\\site-packages\\googleapis\\codegen\\generate_library.py')");
+    
+      // The generate_library.exe runs library generation asynchronously on Windows due to https://bugs.python.org/issue9148
+      // so we call the script directly
+    
+      String python = firstNonNull(
+              getenv("GOOGLE_GENERATE_LIBRARY_PYTHON"),
+              "python"
+      );
+    
+      String scriptLocation = firstNonNull(
+              getenv("GOOGLE_GENERATE_LIBRARY_SCRIPT_LOCATION"),
+              getProperty("user.home") + "\\AppData\\Roaming\\Python\\Python27\\site-packages\\googleapis\\codegen\\generate_library.py"
+      );
+    
+      File scriptLocationFile = new File(scriptLocation);
+      Preconditions.checkArgument(scriptLocation.endsWith("generate_library.py"), "You should specify a generate_library.py in the GOOGLE_GENERATE_LIBRARY_SCRIPT_LOCATION env var");
+      Preconditions.checkArgument(scriptLocationFile.isFile(), "Could not find script at '" + scriptLocationFile.getAbsolutePath() + "':  make the GOOGLE_GENERATE_LIBRARY_SCRIPT_LOCATION env var point at the generate_library.py script you have installed");
+    
+      return Arrays.asList(python, scriptLocationFile.getAbsolutePath());
+    }
+    
+    return Collections.singletonList(GENERATOR_EXECUTABLE);
   }
 }
