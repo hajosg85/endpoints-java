@@ -16,6 +16,7 @@
 
 project.ext {
   servletVersion="2.5"
+  autoValueVersion="1.8.2"
 }
 
 subprojects {
