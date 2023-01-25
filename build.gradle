@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+project.ext {
+  servletVersion="2.5"
+}
+
 subprojects {
   apply plugin: 'java'
   apply plugin: 'jacoco'
