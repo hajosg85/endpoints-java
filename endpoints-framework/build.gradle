@@ -102,7 +102,7 @@ dependencies {
 
   compileOnly group: 'javax.servlet', name: 'servlet-api', version: "2.5"
   compileOnly group: 'com.google.auto.value', name: 'auto-value-annotations', version: autoValueVersion
-  annotationProcessor group: 'com.google.auto.value', name: 'auto-value', version: "1.8.2"
+  annotationProcessor group: 'com.google.auto.value', name: 'auto-value', version: "1.10.1"
 
   api group: 'org.hibernate.validator', name: 'hibernate-validator', version: hibernateValidatorVersion
   api group: 'jakarta.validation', name: 'jakarta.validation-api', version: validationApiVersion
